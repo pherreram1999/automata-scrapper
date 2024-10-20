@@ -5,7 +5,6 @@ import (
 	"embed"
 	_ "embed"
 	"errors"
-	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
@@ -48,10 +47,15 @@ func visitSite() {
 
 	htmlText := string(htmlRes)
 
-	acosoFrecuency := automata.AcosoCounter(htmlText)
+	acosoStatus := automata.AcosoStatus(htmlText)
 	// empezamos a contar
 
-	dialog.ShowInformation("Counter", fmt.Sprintf("Acoso: %d", acosoFrecuency), windowParent)
+	if err = automata.SaveStatusInDisk(acosoStatus); err != nil {
+		dialog.ShowError(err, windowParent)
+		return
+	}
+
+	dialog.ShowInformation("Counter", "status guarda", windowParent)
 }
 
 func main() {
