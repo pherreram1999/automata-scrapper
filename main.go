@@ -1,6 +1,7 @@
 package main
 
 import (
+	"automata-scrapper/automata"
 	"embed"
 	_ "embed"
 	"errors"
@@ -26,7 +27,6 @@ var loadContainer *fyne.Container
 
 var urlSite string
 var windowParent fyne.Window
-var loading bool
 
 func visitSite() {
 	loadContainer.Show()
@@ -48,8 +48,10 @@ func visitSite() {
 
 	htmlText := string(htmlRes)
 
-	fmt.Println("visited, status", res.Status)
-	fmt.Println(htmlText)
+	acosoFrecuency := automata.AcosoCounter(htmlText)
+	// empezamos a contar
+
+	dialog.ShowInformation("Counter", fmt.Sprintf("Acoso: %d", acosoFrecuency), windowParent)
 }
 
 func main() {
