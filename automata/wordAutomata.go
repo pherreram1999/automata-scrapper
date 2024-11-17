@@ -73,7 +73,7 @@ func (wa *WordAutomata) PrintInfo() *WordAutomata {
 	return wa
 }
 
-func (wa *WordAutomata) RenderGraph() error {
+func (wa *WordAutomata) RenderGraph() (*GraphImage, error) {
 
 	g := &GraphData{Name: wa.Word}
 
@@ -106,13 +106,13 @@ func (wa *WordAutomata) RenderGraph() error {
 	tmpl, err := template.New(g.Name).Parse(graphizLayout)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var dotLayout, svg bytes.Buffer
 
 	if err = tmpl.Execute(&dotLayout, g); err != nil {
-		return err
+		return nil, err
 	}
 
 	cmd := exec.Command("dot", "-Tsvg")
@@ -121,8 +121,8 @@ func (wa *WordAutomata) RenderGraph() error {
 	cmd.Stdout = &svg
 
 	if err = cmd.Run(); err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &GraphImage{data: svg.Bytes()}, nil
 }

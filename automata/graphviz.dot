@@ -3,6 +3,7 @@ digraph {{ .Name }} {
     node [fontname="Helvetica,Arial,sans-serif"]
     edge [fontname="Helvetica,Arial,sans-serif"]
     rankdir=LR;
+    //{rank=same; {{ range .Edges -}} q{{ .From }} q{{ .To }} {{ end }} }
     node [shape = doublecircle]; q{{ .FinalState }};
     node [shape = circle];
     {{ range .Edges -}}

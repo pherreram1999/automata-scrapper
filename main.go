@@ -49,12 +49,12 @@ func visitSite() {
 	htmlText := strings.ToLower(string(htmlRes))
 
 	acecho := automata.WordInspection("acecho", htmlText)
-	acoso := automata.WordInspection("acoso", htmlText)
-	if err = acecho.RenderGraph(); err != nil {
+	//acoso := automata.WordInspection("acoso", htmlText)
+	img, err := acecho.RenderGraph()
+	if err != nil {
 		dialog.ShowError(err, windowParent)
 	}
-	acecho.PrintInfo()
-	acoso.PrintInfo()
+	img.Save("acecho.svg")
 
 	dialog.ShowInformation("Counter", "status guarda", windowParent)
 }
