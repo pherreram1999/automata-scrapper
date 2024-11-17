@@ -8,7 +8,7 @@ import (
 
 const StatusPath = "status"
 
-func SaveStatusInDisk(status *WordStatus) error {
+func SaveStatusInDisk(status *WordAutomata) error {
 	_ = os.Mkdir(StatusPath, os.ModePerm) // aseguramos que existe la carpeta
 	jsonFile, err := os.Create(fmt.Sprintf("%s/%s_status.json", StatusPath, status.Word))
 	if err != nil {

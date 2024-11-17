@@ -17,6 +17,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 )
 
 //go:embed assets
@@ -45,15 +46,28 @@ func visitSite() {
 		dialog.ShowError(err, windowParent)
 	}
 
-	htmlText := string(htmlRes)
+	htmlText := strings.ToLower(string(htmlRes))
 
-	acosoStatus := automata.AcosoStatus(htmlText)
+	acecho := automata.AutoAutomata("acecho", htmlText)
+	acoso := automata.AutoAutomata("acoso", htmlText)
+	acecho.PrintInfo()
+	acoso.PrintInfo()
+	/*status := []*automata.WordAutomata{
+		automata.AcosoAutomata(htmlText),
+		automata.AcechoAutomata(htmlText),
+	}*/
+
+	/*automata.AutoAutomata("acecho", htmlText)
+	automata.AutoAutomata("acoso", htmlText)*/
+
 	// empezamos a contar
 
-	if err = automata.SaveStatusInDisk(acosoStatus); err != nil {
-		dialog.ShowError(err, windowParent)
-		return
-	}
+	/*for _, s := range status {
+		if err = automata.SaveStatusInDisk(s); err != nil {
+			dialog.ShowError(err, windowParent)
+			return
+		}
+	}*/
 
 	dialog.ShowInformation("Counter", "status guarda", windowParent)
 }
