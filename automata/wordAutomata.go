@@ -1,8 +1,15 @@
 package automata
 
 import (
+	"bytes"
+	_ "embed"
 	"fmt"
+	"os/exec"
+	"text/template"
 )
+
+//go:embed graphviz.dot
+var graphizLayout string
 
 type (
 	State uint
@@ -67,6 +74,55 @@ func (wa *WordAutomata) PrintInfo() *WordAutomata {
 }
 
 func (wa *WordAutomata) RenderGraph() error {
+
+	g := &GraphData{Name: wa.Word}
+
+	g.FinalState = len(wa.Word) + 1
+
+	var i int
+	var symbol string
+	for i = 0; i < g.FinalState; i++ {
+		if i+1 == g.FinalState {
+			symbol = ""
+		} else {
+			symbol = string(wa.Word[i])
+		}
+		g.Edges = append(g.Edges, &GraphNodeTransition{
+			From:   i,
+			To:     i + 1,
+			Symbol: symbol,
+		})
+	}
+
+	// epislon moves
+	for i = 1; i < g.FinalState; i++ {
+		g.Edges = append(g.Edges, &GraphNodeTransition{
+			From:   i,
+			To:     0,
+			Symbol: "ε",
+		})
+	}
+
+	tmpl, err := template.New(g.Name).Parse(graphizLayout)
+
+	if err != nil {
+		return err
+	}
+
+	var dotLayout, svg bytes.Buffer
+
+	if err = tmpl.Execute(&dotLayout, g); err != nil {
+		return err
+	}
+
+	cmd := exec.Command("dot", "-Tsvg")
+
+	cmd.Stdin = &dotLayout
+	cmd.Stdout = &svg
+
+	if err = cmd.Run(); err != nil {
+		return err
+	}
 
 	return nil
 }

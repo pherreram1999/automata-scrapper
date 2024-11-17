@@ -55,22 +55,6 @@ func visitSite() {
 	}
 	acecho.PrintInfo()
 	acoso.PrintInfo()
-	/*status := []*automata.WordAutomata{
-		automata.AcosoAutomata(htmlText),
-		automata.AcechoAutomata(htmlText),
-	}*/
-
-	/*automata.WordInspection("acecho", htmlText)
-	automata.WordInspection("acoso", htmlText)*/
-
-	// empezamos a contar
-
-	/*for _, s := range status {
-		if err = automata.SaveStatusInDisk(s); err != nil {
-			dialog.ShowError(err, windowParent)
-			return
-		}
-	}*/
 
 	dialog.ShowInformation("Counter", "status guarda", windowParent)
 }

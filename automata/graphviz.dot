@@ -1,0 +1,11 @@
+digraph {{ .Name }} {
+    fontname="Helvetica,Arial,sans-serif"
+    node [fontname="Helvetica,Arial,sans-serif"]
+    edge [fontname="Helvetica,Arial,sans-serif"]
+    rankdir=LR;
+    node [shape = doublecircle]; q{{ .FinalState }};
+    node [shape = circle];
+    {{ range .Edges -}}
+    q{{ .From }} -> q{{ .To }} [label="{{ .Symbol }}"];
+    {{ end -}}
+}
