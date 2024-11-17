@@ -48,8 +48,11 @@ func visitSite() {
 
 	htmlText := strings.ToLower(string(htmlRes))
 
-	acecho := automata.AutoAutomata("acecho", htmlText)
-	acoso := automata.AutoAutomata("acoso", htmlText)
+	acecho := automata.WordInspection("acecho", htmlText)
+	acoso := automata.WordInspection("acoso", htmlText)
+	if err = acecho.RenderGraph(); err != nil {
+		dialog.ShowError(err, windowParent)
+	}
 	acecho.PrintInfo()
 	acoso.PrintInfo()
 	/*status := []*automata.WordAutomata{
@@ -57,8 +60,8 @@ func visitSite() {
 		automata.AcechoAutomata(htmlText),
 	}*/
 
-	/*automata.AutoAutomata("acecho", htmlText)
-	automata.AutoAutomata("acoso", htmlText)*/
+	/*automata.WordInspection("acecho", htmlText)
+	automata.WordInspection("acoso", htmlText)*/
 
 	// empezamos a contar
 

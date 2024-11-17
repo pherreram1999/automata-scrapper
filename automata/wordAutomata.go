@@ -1,6 +1,8 @@
 package automata
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type (
 	State uint
@@ -24,7 +26,7 @@ func CopyPosition(wp *WordPosition) *WordPosition {
 	}
 }
 
-func AutoAutomata(word, text string) *WordAutomata {
+func WordInspection(word, text string) *WordAutomata {
 	/**
 	Tomando la premisa de las expresiones regulares son un serie de simbolos concatenados
 	se observa un avance lineal (cambio de estado) por cada simbolo al siguiente,
@@ -62,4 +64,9 @@ func (wa *WordAutomata) PrintInfo() *WordAutomata {
 	fmt.Println("word:\t", wa.Word)
 	fmt.Println("frequency:\t", wa.Frequency)
 	return wa
+}
+
+func (wa *WordAutomata) RenderGraph() error {
+
+	return nil
 }
