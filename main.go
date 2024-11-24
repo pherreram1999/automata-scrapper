@@ -5,89 +5,133 @@ import (
 	"embed"
 	_ "embed"
 	"errors"
+	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
-	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"image/color"
+	"hash/fnv"
 	"io"
-	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
 //go:embed assets
 var cheemsWeb embed.FS
 
-var loadContainer *fyne.Container
-
-var urlSite string
-var windowParent fyne.Window
-
-func visitSite() {
-	loadContainer.Show()
-	defer loadContainer.Hide()
-	res, err := http.Get(urlSite)
-	if err != nil {
-		dialog.ShowError(err, windowParent)
-	}
-
-	if res.StatusCode != 200 {
-		dialog.ShowError(errors.New(res.Status), windowParent)
-	}
-
-	htmlRes, err := io.ReadAll(res.Body)
-
-	if err != nil {
-		dialog.ShowError(err, windowParent)
-	}
-
-	htmlText := strings.ToLower(string(htmlRes))
-
-	acecho := automata.WordInspection("acecho", htmlText)
-	//acoso := automata.WordInspection("acoso", htmlText)
-	img, err := acecho.RenderGraph()
-	if err != nil {
-		dialog.ShowError(err, windowParent)
-	}
-	img.Save("acecho.svg")
-
-	dialog.ShowInformation("Counter", "status guarda", windowParent)
-}
+var w fyne.Window
 
 func main() {
-	a := app.New()
-	windowParent = a.NewWindow("Automata Scrapper")
-	windowParent.Resize(fyne.NewSize(600, 400))
+	a := app.NewWithID("automata-search")
+	w = a.NewWindow("Automata Search")
+	w.Resize(fyne.NewSize(800, 600))
 
-	// header
-	urlBind := binding.BindString(&urlSite)
-	inputSite := widget.NewEntry()
-	inputSite.Bind(urlBind)
-	bntSubmit := widget.NewButton("Cargar", visitSite)
-	gridHeader := container.New(layout.NewGridLayout(2), inputSite, bntSubmit)
+	cont := container.New(
+		layout.NewVBoxLayout(),
+		urlSearchWidget(),
+	)
 
-	// waiting load
-	cheemsImgFile, err := cheemsWeb.Open("assets/cheems.jpeg")
-	if err != nil {
-		log.Fatal(err)
+	w.SetContent(cont)
+	w.ShowAndRun()
+}
+
+func urlSearchWidget() *fyne.Container {
+
+	urlBind := binding.NewString()
+	statusBind := binding.NewString()
+
+	label := widget.NewLabel("URL Site")
+
+	statusLbl := widget.NewLabel("(Status)")
+	statusLbl.Bind(statusBind)
+
+	input := widget.NewEntry()
+	input.Bind(urlBind)
+
+	hasher := fnv.New32a()
+
+	hashFunc := func(txt string) string {
+		hasher.Reset()
+		_, _ = hasher.Write([]byte(txt))
+		return fmt.Sprintf("%x", hasher.Sum32())
 	}
-	loadText := canvas.NewText("Cargando sitio,por favor espere", color.Black)
-	loadText.TextSize = 16
-	loadText.TextStyle.Bold = true
-	loadImage := canvas.NewImageFromReader(cheemsImgFile, "cheems.jpeg")
-	loadImage.Resize(fyne.NewSize(150, 200))
-	loadImage.Move(fyne.NewPos(0, 23))
-	// loading container
-	loadContainer = container.NewWithoutLayout(loadText, loadImage)
-	loadContainer.Hidden = true
-	// container app
-	allContainer := container.New(layout.NewVBoxLayout(), gridHeader, loadContainer)
 
-	windowParent.SetContent(allContainer)
-	windowParent.ShowAndRun()
+	downloadSiteFunc := func(filename, url string) error {
+		res, err := http.Get(url)
+		if err != nil {
+			return err
+		}
+		if res.StatusCode != 200 {
+			return err
+		}
+		_ = os.Mkdir("sites", os.ModePerm) // nos aseguramos que exista la carpeta
+		fileSite, err := os.Create(filename)
+
+		if err != nil {
+			return err
+		}
+
+		defer fileSite.Close()
+
+		_, err = io.Copy(fileSite, res.Body)
+
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	visitSiteFunc := func(url string) {
+		filename := fmt.Sprintf("%s.html", hashFunc(url))
+		path := filepath.Join("sites", filename)
+		_, err := os.Stat(path)
+
+		if errors.Is(err, os.ErrNotExist) {
+			if err = downloadSiteFunc(path, url); err != nil {
+				ShowError(err)
+				return
+			}
+			statusBind.Set("Sitio descargado localmente")
+		} else {
+			statusBind.Set("(Sitio cargado desde local)")
+		}
+
+		html, err := os.ReadFile(path)
+
+		if err != nil {
+			ShowError(err)
+			return
+		}
+
+		automata.SearchSet(string(html))
+
+		Alert("Sitio Descargado", "El sitio se ha guardado localmente")
+	}
+
+	searchFunc := func() {
+		url, _ := urlBind.Get()
+		url = strings.TrimSpace(url)
+		if len(url) == 0 {
+			ShowError(errors.New("URL vacia"))
+			return
+		}
+
+		visitSiteFunc(url)
+
+	}
+
+	searchBtn := widget.NewButtonWithIcon("Search", theme.SearchIcon(), searchFunc)
+	buttonContainer := container.New(layout.NewHBoxLayout(), searchBtn, statusLbl)
+
+	return container.New(
+		layout.NewVBoxLayout(),
+		label,
+		input,
+		buttonContainer,
+	)
 }
