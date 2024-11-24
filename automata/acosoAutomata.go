@@ -101,31 +101,3 @@ func AcechoAutomata(text string) *WordAutomata {
 
 	return ws
 }
-
-func SearchSet(text string) {
-	var currentState State = 0 // estado inicial
-	for _, char := range text {
-		// condicionales para acoso
-		if currentState == 0 && char == 'a' {
-			currentState = 1
-		} else if currentState == 1 && char == 'c' {
-			currentState = 2
-		} else if currentState == 2 && char == 'o' {
-			currentState = 3
-		} else if currentState == 3 && char == 's' {
-			currentState = 4
-		} else if currentState == 4 && char == 'o' {
-			// estado final para acoso
-			currentState = 5
-		} else if currentState == 2 && char == 'e' { // se bifurca el automata en acecho
-			currentState = 6
-		} else if currentState == 6 && char == 'c' {
-			currentState = 7
-		} else if currentState == 7 && char == 'h' {
-			currentState = 8
-		} else {
-			currentState = 0 // volvemos al estado incial en cualquier otra transicion no esperada
-		}
-
-	}
-}
