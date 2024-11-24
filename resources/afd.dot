@@ -1,0 +1,105 @@
+digraph AFD {
+    rankdir=LR;
+    size="8,5";
+
+    // Estados
+    node [shape = circle];
+    q0; q1; q2; q3; q4; q6; q7; q8; q9;
+    q11; q12; q13; q14; q15; q16; q17; q19;
+    q20; q21; q22; q23; q25; q26; q27; q28;
+    q29; q30; q32; q33; q34; q35; q36; q37;
+
+    // Estados de aceptación
+    node [shape = doublecircle];
+    q5; q10; q18; q24; q31; q38;
+
+    // Transiciones
+    node [shape = circle];
+    q0 -> q0 [label = "Σ-a-v-m"];
+    q0 -> q1 [label = "a"];
+    q0 -> q8 [label = "v"];
+    q0 -> q13 [label = "m"];
+
+    // "acoso" y "acecho"
+    q1 -> q2 [label = "c"];
+    q2 -> q3 [label = "o"];
+    q3 -> q4 [label = "s"];
+    q4 -> q5 [label = "o"];
+    q2 -> q6 [label = "e"];
+    q6 -> q7 [label = "c"];
+    q7 -> q9 [label = "h"];
+    q9 -> q10 [label = "o"];
+    q1 -> q0 [label = "Σ-c-g"];
+    q2 -> q0 [label = "Σ-o-e"];
+    q3 -> q0 [label = "Σ-s"];
+    q4 -> q0 [label = "Σ-o"];
+    q5 -> q0 [label = "Σ"];
+    q6 -> q0 [label = "Σ-c"];
+    q7 -> q0 [label = "Σ-h"];
+    q9 -> q0 [label = "Σ-o"];
+    q10 -> q0 [label = "Σ"];
+
+    // "agresión"
+    q1 -> q11 [label = "g"];
+    q11 -> q12 [label = "r"];
+    q12 -> q14 [label = "e"];
+    q14 -> q15 [label = "s"];
+    q15 -> q16 [label = "i"];
+    q16 -> q17 [label = "ó"];
+    q17 -> q18 [label = "n"];
+    q11 -> q0 [label = "Σ-r"];
+    q12 -> q0 [label = "Σ-e"];
+    q14 -> q0 [label = "Σ-s"];
+    q15 -> q0 [label = "Σ-i"];
+    q16 -> q0 [label = "Σ-ó"];
+    q17 -> q0 [label = "Σ-n"];
+    q18 -> q0 [label = "Σ"];
+
+    // "víctima"
+    q8 -> q19 [label = "i"];
+    q19 -> q20 [label = "c"];
+    q20 -> q21 [label = "t"];
+    q21 -> q22 [label = "i"];
+    q22 -> q23 [label = "m"];
+    q23 -> q24 [label = "a"];
+    q8 -> q0 [label = "Σ-i"];
+    q19 -> q0 [label = "Σ-c-o"];
+    q20 -> q0 [label = "Σ-t"];
+    q21 -> q0 [label = "Σ-i"];
+    q22 -> q0 [label = "Σ-m"];
+    q23 -> q0 [label = "Σ-a"];
+    q24 -> q0 [label = "Σ"];
+
+    // "violación"
+    q19 -> q25 [label = "o"];
+    q25 -> q26 [label = "l"];
+    q26 -> q27 [label = "a"];
+    q27 -> q28 [label = "c"];
+    q28 -> q29 [label = "i"];
+    q29 -> q30 [label = "ó"];
+    q30 -> q31 [label = "n"];
+    q25 -> q0 [label = "Σ-l"];
+    q26 -> q0 [label = "Σ-a"];
+    q27 -> q0 [label = "Σ-c"];
+    q28 -> q0 [label = "Σ-i"];
+    q29 -> q0 [label = "Σ-ó"];
+    q30 -> q0 [label = "Σ-n"];
+    q31 -> q0 [label = "Σ"];
+
+    // "machista"
+    q13 -> q32 [label = "a"];
+    q32 -> q33 [label = "c"];
+    q33 -> q34 [label = "h"];
+    q34 -> q35 [label = "i"];
+    q35 -> q36 [label = "s"];
+    q36 -> q37 [label = "t"];
+    q37 -> q38 [label = "a"];
+    q13 -> q0 [label = "Σ-a"];
+    q32 -> q0 [label = "Σ-c"];
+    q33 -> q0 [label = "Σ-h"];
+    q34 -> q0 [label = "Σ-i"];
+    q35 -> q0 [label = "Σ-s"];
+    q36 -> q0 [label = "Σ-t"];
+    q37 -> q0 [label = "Σ-a"];
+    q38 -> q0 [label = "Σ"];
+}
