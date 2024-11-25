@@ -1,6 +1,8 @@
 package main
 
-import "automata-scrapper/automata"
+import (
+	"automata-scrapper/automata"
+)
 
 func SearchSet(text string, words SetWords) {
 	var currentState automata.State = 0 // estado inicial
