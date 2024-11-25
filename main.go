@@ -1,7 +1,6 @@
 package main
 
 import (
-	"automata-scrapper/automata"
 	"embed"
 	_ "embed"
 	"errors"
@@ -31,16 +30,57 @@ func main() {
 	w = a.NewWindow("Automata Search")
 	w.Resize(fyne.NewSize(800, 600))
 
+	wordsSet := InitSetWords()
+
+	gridInfo := container.New(
+		layout.NewGridLayout(2),
+		setWordsWidget(wordsSet),
+	)
+
 	cont := container.New(
 		layout.NewVBoxLayout(),
-		urlSearchWidget(),
+		urlSearchWidget(wordsSet),
+		gridInfo,
 	)
 
 	w.SetContent(cont)
 	w.ShowAndRun()
 }
 
-func urlSearchWidget() *fyne.Container {
+type SetWords map[string]*WordStatus
+
+func InitSetWords() SetWords {
+	words := []string{"acoso", "acecho", "victima", "violacion", "machista"}
+	wordStatus := make(SetWords, len(words))
+	for _, word := range words {
+		wordStatus[word] = &WordStatus{
+			Word:        word,
+			FrequeyBind: binding.NewString(),
+		}
+	}
+	return wordStatus
+}
+
+func setWordsWidget(setWords SetWords) *fyne.Container {
+
+	cont := container.New(layout.NewVBoxLayout())
+
+	for _, ws := range setWords {
+		frequencyLbl := widget.NewLabel("0")
+		frequencyLbl.Bind(ws.FrequeyBind)
+		cont.Add(
+			container.New(
+				layout.NewGridLayout(2),
+				widget.NewLabel(ws.Word),
+				frequencyLbl,
+			),
+		)
+	}
+
+	return cont
+}
+
+func urlSearchWidget(setWords SetWords) *fyne.Container {
 
 	urlBind := binding.NewString()
 	statusBind := binding.NewString()
@@ -67,7 +107,7 @@ func urlSearchWidget() *fyne.Container {
 			return err
 		}
 		if res.StatusCode != 200 {
-			return err
+			return errors.New(res.Status)
 		}
 		_ = os.Mkdir("sites", os.ModePerm) // nos aseguramos que exista la carpeta
 		fileSite, err := os.Create(filename)
@@ -108,7 +148,7 @@ func urlSearchWidget() *fyne.Container {
 			return
 		}
 
-		automata.SearchSet(string(html))
+		SearchSet(string(html), setWords)
 
 		Alert("Sitio Descargado", "El sitio se ha guardado localmente")
 	}

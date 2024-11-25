@@ -1,7 +1,9 @@
-package automata
+package main
 
-func SearchSet(text string) {
-	var currentState State = 0 // estado inicial
+import "automata-scrapper/automata"
+
+func SearchSet(text string, words SetWords) {
+	var currentState automata.State = 0 // estado inicial
 	for _, char := range text {
 		// condicionales para acoso
 		if currentState == 0 && char == 'a' {
@@ -14,6 +16,7 @@ func SearchSet(text string) {
 			currentState = 4
 		} else if currentState == 4 && char == 'o' {
 			// currentState = 5 // ESTADO final "acoso"
+			words["acoso"].Plus()
 			currentState = 0
 		} else if currentState == 2 && char == 'e' { // se bifurca el automata en acecho
 			currentState = 6
@@ -23,6 +26,7 @@ func SearchSet(text string) {
 			currentState = 8
 		} else if currentState == 8 && char == 'o' {
 			// currentState = 9 ESTADO FINAL "acecho"
+			words["acecho"].Plus()
 		} else if currentState == 1 && char == 'g' {
 			currentState = 10
 		} else if currentState == 10 && char == 'r' {
@@ -37,6 +41,7 @@ func SearchSet(text string) {
 			currentState = 15
 		} else if currentState == 15 && char == 'n' {
 			// currentState = 16 ESTADO FINAL "agresion"
+			words["agresion"].Plus()
 		} else if currentState == 0 && char == 'v' { // inicia victima
 			currentState = 17
 		} else if currentState == 17 && char == 'i' {
@@ -50,7 +55,8 @@ func SearchSet(text string) {
 		} else if currentState == 21 && char == 'm' {
 			currentState = 22
 		} else if currentState == 22 && char == 'a' {
-			// currentState = 23 ESTADO FINAL
+			// currentState = 23 ESTADO FINAL "victima"
+			words["victima"].Plus()
 			currentState = 0
 		} else if currentState == 18 && char == 'o' {
 			currentState = 24
@@ -66,6 +72,7 @@ func SearchSet(text string) {
 			currentState = 29
 		} else if currentState == 29 && char == 'n' {
 			// currentState = 30 ESTADO FINAL de "violación"
+			words["violacion"].Plus()
 			currentState = 0
 		} else if currentState == 0 && char == 'm' {
 			currentState = 31
@@ -83,6 +90,8 @@ func SearchSet(text string) {
 			currentState = 37
 		} else if currentState == 37 && char == 'a' {
 			// currentState = 38 Estado final de "machista"
+			words["machista"].Plus()
+			currentState = 0
 		} else {
 			currentState = 0 // volvemos al estado incial en cualquier otra transicion no esperada
 		}
