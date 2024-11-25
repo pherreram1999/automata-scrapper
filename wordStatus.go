@@ -15,3 +15,8 @@ func (ws *WordStatus) Plus() {
 	ws.frequency++
 	ws.FrequeyBind.Set(fmt.Sprintf("%d", ws.frequency))
 }
+
+func (ws *WordStatus) Reset() {
+	ws.frequency = 0
+	ws.FrequeyBind.Set(fmt.Sprintf("%d", ws.frequency))
+}

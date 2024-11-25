@@ -49,6 +49,12 @@ func main() {
 
 type SetWords map[string]*WordStatus
 
+func (words SetWords) Reset() {
+	for _, word := range words {
+		word.Reset()
+	}
+}
+
 func InitSetWords() SetWords {
 	words := []string{"acoso", "acecho", "victima", "violacion", "machista"}
 	wordStatus := make(SetWords, len(words))
@@ -148,7 +154,8 @@ func urlSearchWidget(setWords SetWords) *fyne.Container {
 			return
 		}
 
-		SearchSet(string(html), setWords)
+		htmlStr := strings.ToLower(strings.TrimSpace(string(html)))
+		SearchSet(htmlStr, setWords)
 
 		Alert("Sitio Descargado", "El sitio se ha guardado localmente")
 	}

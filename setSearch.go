@@ -4,6 +4,7 @@ import "automata-scrapper/automata"
 
 func SearchSet(text string, words SetWords) {
 	var currentState automata.State = 0 // estado inicial
+	words.Reset()
 	for _, char := range text {
 		// condicionales para acoso
 		if currentState == 0 && char == 'a' {
