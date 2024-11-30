@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"embed"
 	_ "embed"
 	"errors"
 	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/layout"
@@ -16,6 +18,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -32,14 +35,17 @@ func main() {
 
 	wordsSet := InitSetWords()
 
+	pieWidget := container.New(layout.NewVBoxLayout())
+
 	gridInfo := container.New(
 		layout.NewGridLayout(2),
 		setWordsWidget(wordsSet),
+		pieWidget,
 	)
 
 	cont := container.New(
 		layout.NewVBoxLayout(),
-		urlSearchWidget(wordsSet),
+		urlSearchWidget(wordsSet, pieWidget),
 		gridInfo,
 	)
 
@@ -48,6 +54,36 @@ func main() {
 }
 
 type SetWords map[string]*WordStatus
+
+func (words SetWords) RenderPie() (*bytes.Buffer, error) {
+	labels := []string{}
+	data := []string{}
+
+	for _, word := range words {
+		labels = append(labels, word.Word)
+		data = append(data, fmt.Sprintf("%d", word.frequency))
+	}
+
+	labelsStr := strings.Join(labels, ",")
+	dataStr := strings.Join(data, ",")
+
+	cmd := exec.Command("python3", "pie.py", `--labels=`+labelsStr, `--data=`+dataStr)
+
+	var buffer, errBuff bytes.Buffer
+
+	cmd.Stdout = &buffer
+	cmd.Stderr = &errBuff
+
+	if err := cmd.Run(); err != nil {
+		return nil, errors.Join(
+			errors.New("No fue posible renderizar la grafica"),
+			err,
+			errors.New(errBuff.String()),
+		)
+	}
+
+	return &buffer, nil
+}
 
 func (words SetWords) Reset() {
 	for _, word := range words {
@@ -86,7 +122,7 @@ func setWordsWidget(setWords SetWords) *fyne.Container {
 	return cont
 }
 
-func urlSearchWidget(setWords SetWords) *fyne.Container {
+func urlSearchWidget(setWords SetWords, pieWidget *fyne.Container) *fyne.Container {
 
 	urlBind := binding.NewString()
 	statusBind := binding.NewString()
@@ -132,6 +168,9 @@ func urlSearchWidget(setWords SetWords) *fyne.Container {
 		return nil
 	}
 
+	/**
+	Se encarga de visitar el sitio y guardar una copia y realizar el conteo de palabras
+	*/
 	visitSiteFunc := func(url string) {
 		filename := fmt.Sprintf("%s.html", hashFunc(url))
 		path := filepath.Join("sites", filename)
@@ -157,7 +196,16 @@ func urlSearchWidget(setWords SetWords) *fyne.Container {
 		htmlStr := strings.ToLower(strings.TrimSpace(string(html)))
 		SearchSet(htmlStr, setWords)
 
-		Alert("Sitio Descargado", "El sitio se ha guardado localmente")
+		// generamos la grafica
+		pieChartData, err := setWords.RenderPie()
+		if err != nil {
+			ShowError(err)
+			return
+		}
+		pieImg := canvas.NewImageFromReader(pieChartData, "pie.png")
+		pieImg.FillMode = canvas.ImageFillOriginal
+		pieWidget.RemoveAll() // quitamos la ultima generada
+		pieWidget.Add(pieImg)
 	}
 
 	searchFunc := func() {
