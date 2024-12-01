@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"embed"
 	_ "embed"
 	"errors"
@@ -18,7 +17,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -30,7 +28,7 @@ var w fyne.Window
 
 func main() {
 	a := app.NewWithID("automata-search")
-	w = a.NewWindow("Automata Search")
+	w = a.NewWindow("Automata Scrapper")
 	w.Resize(fyne.NewSize(800, 600))
 
 	wordsSet := InitSetWords()
@@ -51,66 +49,6 @@ func main() {
 
 	w.SetContent(cont)
 	w.ShowAndRun()
-}
-
-type SetWords map[string]*WordStatus
-
-func (words SetWords) RenderPie() (*bytes.Buffer, error) {
-	labels := []string{}
-	data := []string{}
-
-	total := words.TotalFrequency()
-
-	for _, word := range words {
-		labels = append(labels, word.Word)
-		data = append(data, fmt.Sprintf("%d", (word.frequency*100)/total))
-	}
-
-	labelsStr := strings.Join(labels, ",")
-	dataStr := strings.Join(data, ",")
-
-	cmd := exec.Command("python3", "pie.py", `--labels=`+labelsStr, `--data=`+dataStr)
-
-	var buffer, errBuff bytes.Buffer
-
-	cmd.Stdout = &buffer
-	cmd.Stderr = &errBuff
-
-	if err := cmd.Run(); err != nil {
-		return nil, errors.Join(
-			errors.New("No fue posible renderizar la grafica"),
-			err,
-			errors.New(errBuff.String()),
-		)
-	}
-
-	return &buffer, nil
-}
-
-func (words SetWords) TotalFrequency() uint {
-	var total uint
-	for _, word := range words {
-		total += word.frequency
-	}
-	return total
-}
-
-func (words SetWords) Reset() {
-	for _, word := range words {
-		word.Reset()
-	}
-}
-
-func InitSetWords() SetWords {
-	words := []string{"acoso", "acecho", "víctima", "violación", "machista", "agresión"}
-	wordStatus := make(SetWords, len(words))
-	for _, word := range words {
-		wordStatus[word] = &WordStatus{
-			Word:        word,
-			FrequeyBind: binding.NewString(),
-		}
-	}
-	return wordStatus
 }
 
 func setWordsWidget(setWords SetWords) *fyne.Container {
@@ -204,7 +142,13 @@ func urlSearchWidget(setWords SetWords, pieWidget *fyne.Container) *fyne.Contain
 		}
 
 		htmlStr := strings.ToLower(strings.TrimSpace(string(html)))
+		if err = setWords.OpenFileOcurrences(filename); err != nil {
+			ShowError(err)
+			return
+		}
+
 		SearchSet(htmlStr, setWords)
+		defer setWords.CloseFiles()
 
 		// generamos la grafica
 		pieChartData, err := setWords.RenderPie()
@@ -216,6 +160,7 @@ func urlSearchWidget(setWords SetWords, pieWidget *fyne.Container) *fyne.Contain
 		pieImg.FillMode = canvas.ImageFillOriginal
 		pieWidget.RemoveAll() // quitamos la ultima generada
 		pieWidget.Add(pieImg)
+
 	}
 
 	searchFunc := func() {

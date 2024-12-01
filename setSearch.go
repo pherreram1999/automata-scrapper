@@ -7,7 +7,14 @@ import (
 func SearchSet(text string, words SetWords) {
 	var currentState automata.State = 0 // estado inicial
 	words.Reset()
+	var linePos, charPos uint = 1, 0
+
 	for _, char := range text {
+		if char == '\n' {
+			linePos++
+			charPos = 0
+		}
+		charPos++
 		// condicionales para acoso
 		if currentState == 0 && char == 'a' {
 			currentState = 1
@@ -19,7 +26,7 @@ func SearchSet(text string, words SetWords) {
 			currentState = 4
 		} else if currentState == 4 && char == 'o' {
 			// currentState = 5 // ESTADO final "acoso"
-			words["acoso"].Plus()
+			words["acoso"].Plus(linePos, charPos)
 			currentState = 0
 		} else if currentState == 2 && char == 'e' { // se bifurca el automata en acecho
 			currentState = 6
@@ -29,7 +36,7 @@ func SearchSet(text string, words SetWords) {
 			currentState = 8
 		} else if currentState == 8 && char == 'o' {
 			// currentState = 9 ESTADO FINAL "acecho"
-			words["acecho"].Plus()
+			words["acecho"].Plus(linePos, charPos)
 		} else if currentState == 1 && char == 'g' {
 			currentState = 10
 		} else if currentState == 10 && char == 'r' {
@@ -44,7 +51,7 @@ func SearchSet(text string, words SetWords) {
 			currentState = 15
 		} else if currentState == 15 && char == 'n' {
 			// currentState = 16 ESTADO FINAL "agresion"
-			words["víctima"].Plus()
+			words["víctima"].Plus(linePos, charPos)
 		} else if currentState == 0 && char == 'v' { // inicia victima
 			currentState = 17
 		} else if currentState == 17 && (char == 'i' || char == 'í') {
@@ -59,7 +66,7 @@ func SearchSet(text string, words SetWords) {
 			currentState = 22
 		} else if currentState == 22 && char == 'a' {
 			// currentState = 23 ESTADO FINAL "victima"
-			words["víctima"].Plus()
+			words["víctima"].Plus(linePos, charPos)
 			currentState = 0
 		} else if currentState == 18 && char == 'o' {
 			currentState = 24
@@ -75,7 +82,7 @@ func SearchSet(text string, words SetWords) {
 			currentState = 29
 		} else if currentState == 29 && char == 'n' {
 			// currentState = 30 ESTADO FINAL de "violación"
-			words["violación"].Plus()
+			words["violación"].Plus(linePos, charPos)
 			currentState = 0
 		} else if currentState == 0 && char == 'm' {
 			currentState = 31
@@ -93,10 +100,11 @@ func SearchSet(text string, words SetWords) {
 			currentState = 37
 		} else if currentState == 37 && char == 'a' {
 			// currentState = 38 Estado final de "machista"
-			words["machista"].Plus()
+			words["machista"].Plus(linePos, charPos)
 			currentState = 0
 		} else {
 			currentState = 0 // volvemos al estado incial en cualquier otra transicion no esperada
 		}
+
 	}
 }
