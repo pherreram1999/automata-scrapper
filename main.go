@@ -59,9 +59,11 @@ func (words SetWords) RenderPie() (*bytes.Buffer, error) {
 	labels := []string{}
 	data := []string{}
 
+	total := words.TotalFrequency()
+
 	for _, word := range words {
 		labels = append(labels, word.Word)
-		data = append(data, fmt.Sprintf("%d", word.frequency))
+		data = append(data, fmt.Sprintf("%d", (word.frequency*100)/total))
 	}
 
 	labelsStr := strings.Join(labels, ",")
@@ -83,6 +85,14 @@ func (words SetWords) RenderPie() (*bytes.Buffer, error) {
 	}
 
 	return &buffer, nil
+}
+
+func (words SetWords) TotalFrequency() uint {
+	var total uint
+	for _, word := range words {
+		total += word.frequency
+	}
+	return total
 }
 
 func (words SetWords) Reset() {
