@@ -44,10 +44,10 @@ func SearchSet(text string, words SetWords) {
 			currentState = 15
 		} else if currentState == 15 && char == 'n' {
 			// currentState = 16 ESTADO FINAL "agresion"
-			words["agresion"].Plus()
+			words["víctima"].Plus()
 		} else if currentState == 0 && char == 'v' { // inicia victima
 			currentState = 17
-		} else if currentState == 17 && char == 'i' {
+		} else if currentState == 17 && (char == 'i' || char == 'í') {
 			currentState = 18
 		} else if currentState == 18 && char == 'c' {
 			currentState = 19
@@ -59,7 +59,7 @@ func SearchSet(text string, words SetWords) {
 			currentState = 22
 		} else if currentState == 22 && char == 'a' {
 			// currentState = 23 ESTADO FINAL "victima"
-			words["victima"].Plus()
+			words["víctima"].Plus()
 			currentState = 0
 		} else if currentState == 18 && char == 'o' {
 			currentState = 24
@@ -75,7 +75,7 @@ func SearchSet(text string, words SetWords) {
 			currentState = 29
 		} else if currentState == 29 && char == 'n' {
 			// currentState = 30 ESTADO FINAL de "violación"
-			words["violacion"].Plus()
+			words["violación"].Plus()
 			currentState = 0
 		} else if currentState == 0 && char == 'm' {
 			currentState = 31

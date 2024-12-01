@@ -38,7 +38,7 @@ func main() {
 	pieWidget := container.New(layout.NewVBoxLayout())
 
 	gridInfo := container.New(
-		layout.NewGridLayout(2),
+		layout.NewHBoxLayout(),
 		setWordsWidget(wordsSet),
 		pieWidget,
 	)
@@ -92,7 +92,7 @@ func (words SetWords) Reset() {
 }
 
 func InitSetWords() SetWords {
-	words := []string{"acoso", "acecho", "victima", "violacion", "machista"}
+	words := []string{"acoso", "acecho", "víctima", "violación", "machista", "agresión"}
 	wordStatus := make(SetWords, len(words))
 	for _, word := range words {
 		wordStatus[word] = &WordStatus{
