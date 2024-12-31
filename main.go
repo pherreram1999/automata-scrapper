@@ -1,7 +1,6 @@
 package main
 
 import (
-	"embed"
 	_ "embed"
 	"errors"
 	"fmt"
@@ -23,13 +22,11 @@ import (
 	"strings"
 )
 
-//go:embed assets
-var cheemsWeb embed.FS
-
 var w fyne.Window
+var a fyne.App
 
 func main() {
-	a := app.NewWithID("automata-search")
+	a = app.NewWithID("automata-search")
 	w = a.NewWindow("Automata Scrapper")
 	w.Resize(fyne.NewSize(800, 600))
 
@@ -252,7 +249,9 @@ func urlSearchWidget(setWords SetWords, pieWidget *fyne.Container, totalBind bin
 
 	pickFileBtn := widget.NewButtonWithIcon("Open File", theme.FileIcon(), openFileFunc)
 
-	buttonContainer := container.New(layout.NewHBoxLayout(), pickFileBtn, searchBtn, statusLbl, filePathLabel)
+	graphBtn := widget.NewButton("Open State Diagram", OpenGraph)
+
+	buttonContainer := container.New(layout.NewHBoxLayout(), pickFileBtn, searchBtn, graphBtn, statusLbl, filePathLabel)
 
 	return container.New(
 		layout.NewVBoxLayout(),
