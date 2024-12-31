@@ -18,6 +18,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -80,6 +81,10 @@ func urlSearchWidget(setWords SetWords, pieWidget *fyne.Container) *fyne.Contain
 	statusLbl := widget.NewLabel("(Status)")
 	statusLbl.Bind(statusBind)
 
+	filePathBind := binding.NewString()
+	filePathLabel := widget.NewLabel("")
+	filePathLabel.Bind(filePathBind)
+
 	input := widget.NewEntry()
 	input.Bind(urlBind)
 
@@ -116,39 +121,7 @@ func urlSearchWidget(setWords SetWords, pieWidget *fyne.Container) *fyne.Contain
 		return nil
 	}
 
-	/**
-	Se encarga de visitar el sitio y guardar una copia y realizar el conteo de palabras
-	*/
-	visitSiteFunc := func(url string) {
-		filename := fmt.Sprintf("%s.html", hashFunc(url))
-		path := filepath.Join("sites", filename)
-		_, err := os.Stat(path)
-
-		if errors.Is(err, os.ErrNotExist) {
-			if err = downloadSiteFunc(path, url); err != nil {
-				ShowError(err)
-				return
-			}
-			statusBind.Set("Sitio descargado localmente")
-		} else {
-			statusBind.Set("(Sitio cargado desde local)")
-		}
-
-		html, err := os.ReadFile(path)
-
-		if err != nil {
-			ShowError(err)
-			return
-		}
-
-		// normalizamos el html
-		htmlStr := strings.ToLower(strings.TrimSpace(string(html)))
-		// abrimos los archivos de cada palabra para guardar las concurrencias
-		if err = setWords.OpenFileOcurrences(filename); err != nil {
-			ShowError(err)
-			return
-		}
-
+	searchProcess := func(htmlStr string) {
 		// esta funcion es la contiene el automata de busqueda
 		SearchSet(htmlStr, setWords)
 		defer setWords.CloseFiles()
@@ -166,6 +139,39 @@ func urlSearchWidget(setWords SetWords, pieWidget *fyne.Container) *fyne.Contain
 
 	}
 
+	/**
+	Se encarga de visitar el sitio y guardar una copia y realizar el conteo de palabras
+	*/
+	visitSiteFunc := func(url string) {
+		filename := fmt.Sprintf("%s.html", hashFunc(url))
+		_ = os.Remove(filename)
+		path := filepath.Join("sites", filename)
+
+		if err := downloadSiteFunc(path, url); err != nil {
+			ShowError(err)
+			return
+		}
+
+		filePathBind.Set(path)
+
+		html, err := os.ReadFile(path)
+
+		if err != nil {
+			ShowError(err)
+			return
+		}
+
+		// normalizamos el html
+		htmlStr := strings.ToLower(strings.TrimSpace(string(html)))
+		// abrimos los archivos de cada palabra para guardar las concurrencias
+		if err = setWords.OpenFileOcurrences(filename); err != nil {
+			ShowError(err)
+			return
+		}
+
+		searchProcess(htmlStr)
+	}
+
 	searchFunc := func() {
 		url, _ := urlBind.Get()
 		url = strings.TrimSpace(url)
@@ -173,13 +179,22 @@ func urlSearchWidget(setWords SetWords, pieWidget *fyne.Container) *fyne.Contain
 			ShowError(errors.New("URL vacia"))
 			return
 		}
+		// valiadamos que empieza con http el domincio para que sea un url valida
+
+		mustHttp := regexp.MustCompile(`http*`)
+
+		if !mustHttp.MatchString(url) {
+			ShowError(errors.New("No es una URL valida,debe emepzar con http"))
+		}
 
 		visitSiteFunc(url)
-
 	}
 
-	searchBtn := widget.NewButtonWithIcon("Search", theme.SearchIcon(), searchFunc)
-	buttonContainer := container.New(layout.NewHBoxLayout(), searchBtn, statusLbl)
+	searchBtn := widget.NewButtonWithIcon("Search In Website", theme.SearchIcon(), searchFunc)
+
+	pickFileBtn := widget.NewButtonWithIcon("Open File", theme.FileIcon(), nil)
+
+	buttonContainer := container.New(layout.NewHBoxLayout(), pickFileBtn, searchBtn, statusLbl, filePathLabel)
 
 	return container.New(
 		layout.NewVBoxLayout(),
