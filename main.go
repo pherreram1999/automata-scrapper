@@ -10,6 +10,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -121,7 +122,14 @@ func urlSearchWidget(setWords SetWords, pieWidget *fyne.Container) *fyne.Contain
 		return nil
 	}
 
-	searchProcess := func(htmlStr string) {
+	searchProcess := func(htmlStr, filename string) {
+		// normalizamos el html
+		htmlStr = strings.ToLower(strings.TrimSpace(string(htmlStr)))
+		// abrimos los archivos de cada palabra para guardar las concurrencias
+		if err := setWords.OpenFileOcurrences(filename); err != nil {
+			ShowError(err)
+			return
+		}
 		// esta funcion es la contiene el automata de busqueda
 		SearchSet(htmlStr, setWords)
 		defer setWords.CloseFiles()
@@ -161,15 +169,7 @@ func urlSearchWidget(setWords SetWords, pieWidget *fyne.Container) *fyne.Contain
 			return
 		}
 
-		// normalizamos el html
-		htmlStr := strings.ToLower(strings.TrimSpace(string(html)))
-		// abrimos los archivos de cada palabra para guardar las concurrencias
-		if err = setWords.OpenFileOcurrences(filename); err != nil {
-			ShowError(err)
-			return
-		}
-
-		searchProcess(htmlStr)
+		searchProcess(string(html), filename)
 	}
 
 	searchFunc := func() {
@@ -190,9 +190,41 @@ func urlSearchWidget(setWords SetWords, pieWidget *fyne.Container) *fyne.Contain
 		visitSiteFunc(url)
 	}
 
+	openFileFunc := func() {
+		dialog.ShowFileOpen(
+			func(reader fyne.URIReadCloser, err error) {
+				if err != nil {
+					ShowError(err)
+					return
+				}
+
+				path := reader.URI().Path()
+				fmt.Println(path)
+				file, err := os.Open(path)
+				if err != nil {
+					ShowError(err)
+					return
+				}
+
+				defer file.Close()
+
+				htmlStr, err := io.ReadAll(file)
+
+				if err != nil {
+					ShowError(err)
+					return
+				}
+
+				filePathBind.Set(path)
+				searchProcess(string(htmlStr), filepath.Base(path))
+			},
+			w,
+		)
+	}
+
 	searchBtn := widget.NewButtonWithIcon("Search In Website", theme.SearchIcon(), searchFunc)
 
-	pickFileBtn := widget.NewButtonWithIcon("Open File", theme.FileIcon(), nil)
+	pickFileBtn := widget.NewButtonWithIcon("Open File", theme.FileIcon(), openFileFunc)
 
 	buttonContainer := container.New(layout.NewHBoxLayout(), pickFileBtn, searchBtn, statusLbl, filePathLabel)
 
