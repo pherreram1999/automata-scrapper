@@ -30,7 +30,6 @@ func SearchSet(text string, words SetWords) {
 			linePos++
 			charPos = 0
 		}
-		charPos++
 		prevState = currentState // para saber de que estado surge la transicion
 		// condicionales para acoso
 		if currentState == 0 && char == 'a' {
@@ -122,6 +121,8 @@ func SearchSet(text string, words SetWords) {
 		} else {
 			currentState = 0 // volvemos al estado incial en cualquier otra transicion no esperada
 		}
+
+		charPos++
 
 		_, _ = fmt.Fprintf(
 			transitionsWriter,

@@ -210,7 +210,22 @@ func urlSearchWidget(setWords SetWords, pieWidget *fyne.Container, totalBind bin
 					return
 				}
 
-				path := reader.URI().Path()
+				if reader == nil {
+					return
+				}
+
+				uri := reader.URI()
+
+				if uri == nil {
+					return
+				}
+
+				path := uri.Path()
+
+				if len(path) == 0 {
+					return
+				}
+
 				file, err := os.Open(path)
 				if err != nil {
 					ShowError(err)
