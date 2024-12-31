@@ -67,8 +67,8 @@ func SearchSet(text string, words SetWords) {
 		} else if currentState == 14 && (char == 'ó' || char == 'o') {
 			currentState = 15
 		} else if currentState == 15 && char == 'n' {
-			// currentState = 16 ESTADO FINAL "agresion"
-			words["víctima"].Plus(linePos, charPos)
+			// currentState = 16 ESTADO FINAL "agresión"
+			words["agresión"].Plus(linePos, charPos)
 		} else if currentState == 0 && char == 'v' { // inicia victima
 			currentState = 17
 		} else if currentState == 17 && (char == 'i' || char == 'í') {

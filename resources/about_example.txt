@@ -1,0 +1,8 @@
+Conteo de palabras:
+Acoso: 9
+Acecho: 8
+Agresión: 5
+Víctima(s): 11
+Violación: 4
+Machista(s): 3
+Total de ocurrencias: 40 palabras.

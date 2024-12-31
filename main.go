@@ -37,15 +37,19 @@ func main() {
 
 	pieWidget := container.New(layout.NewVBoxLayout())
 
+	totalBind := binding.NewString()
+
 	gridInfo := container.New(
 		layout.NewHBoxLayout(),
-		setWordsWidget(wordsSet),
+		setWordsWidget(wordsSet, totalBind),
 		pieWidget,
 	)
 
 	cont := container.New(
 		layout.NewVBoxLayout(),
-		urlSearchWidget(wordsSet, pieWidget),
+		// contiene la barra de busqueda
+		urlSearchWidget(wordsSet, pieWidget, totalBind),
+		// son los resultados
 		gridInfo,
 	)
 
@@ -53,7 +57,7 @@ func main() {
 	w.ShowAndRun()
 }
 
-func setWordsWidget(setWords SetWords) *fyne.Container {
+func setWordsWidget(setWords SetWords, totalBind binding.String) *fyne.Container {
 
 	cont := container.New(layout.NewVBoxLayout())
 
@@ -69,10 +73,16 @@ func setWordsWidget(setWords SetWords) *fyne.Container {
 		)
 	}
 
+	totalLbl := widget.NewLabel("total")
+	resultLbl := widget.NewLabel("0")
+	resultLbl.Bind(totalBind)
+
+	cont.Add(container.New(layout.NewHBoxLayout(), totalLbl, resultLbl))
+
 	return cont
 }
 
-func urlSearchWidget(setWords SetWords, pieWidget *fyne.Container) *fyne.Container {
+func urlSearchWidget(setWords SetWords, pieWidget *fyne.Container, totalBind binding.String) *fyne.Container {
 
 	urlBind := binding.NewString()
 	statusBind := binding.NewString()
@@ -145,6 +155,8 @@ func urlSearchWidget(setWords SetWords, pieWidget *fyne.Container) *fyne.Contain
 		pieWidget.RemoveAll() // quitamos la ultima generada
 		pieWidget.Add(pieImg)
 
+		totalBind.Set(fmt.Sprintf("%d", setWords.TotalFrequency()))
+
 	}
 
 	/**
@@ -199,7 +211,6 @@ func urlSearchWidget(setWords SetWords, pieWidget *fyne.Container) *fyne.Contain
 				}
 
 				path := reader.URI().Path()
-				fmt.Println(path)
 				file, err := os.Open(path)
 				if err != nil {
 					ShowError(err)
