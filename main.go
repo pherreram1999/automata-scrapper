@@ -141,12 +141,15 @@ func urlSearchWidget(setWords SetWords, pieWidget *fyne.Container) *fyne.Contain
 			return
 		}
 
+		// normalizamos el html
 		htmlStr := strings.ToLower(strings.TrimSpace(string(html)))
+		// abrimos los archivos de cada palabra para guardar las concurrencias
 		if err = setWords.OpenFileOcurrences(filename); err != nil {
 			ShowError(err)
 			return
 		}
 
+		// esta funcion es la contiene el automata de busqueda
 		SearchSet(htmlStr, setWords)
 		defer setWords.CloseFiles()
 

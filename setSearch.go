@@ -2,19 +2,36 @@ package main
 
 import (
 	"automata-scrapper/automata"
+	"fmt"
+	"os"
+	"text/tabwriter"
 )
 
 func SearchSet(text string, words SetWords) {
-	var currentState automata.State = 0 // estado inicial
+	var currentState, prevState automata.State = 0, 0 // estado inicial
 	words.Reset()
+
+	// creamos un archivo en la cual vamos a guardar la transiciones del automata
+
+	_ = os.Remove("automata_transistions.txt")
+	fileTransitions, err := os.Create("automata_transistions.txt")
+	if err != nil {
+		ShowError(err)
+		return
+	}
+	defer fileTransitions.Close()
+	transitionsWriter := tabwriter.NewWriter(fileTransitions, 0, 2, 2, '\t', 0)
+
+	fmt.Fprintf(transitionsWriter, "No.\t| Transition\n")
 	var linePos, charPos uint = 1, 0
 
-	for _, char := range text {
+	for i, char := range text {
 		if char == '\n' {
 			linePos++
 			charPos = 0
 		}
 		charPos++
+		prevState = currentState // para saber de que estado surge la transicion
 		// condicionales para acoso
 		if currentState == 0 && char == 'a' {
 			currentState = 1
@@ -106,5 +123,14 @@ func SearchSet(text string, words SetWords) {
 			currentState = 0 // volvemos al estado incial en cualquier otra transicion no esperada
 		}
 
+		_, _ = fmt.Fprintf(
+			transitionsWriter,
+			"%d\t|(q%d,%s) -> q%d\n",
+			i,
+			prevState,
+			string(char),
+			currentState,
+		)
 	}
+	_ = transitionsWriter.Flush()
 }
